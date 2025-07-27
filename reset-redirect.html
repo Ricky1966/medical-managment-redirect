@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <title>Reset Redirect</title>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const url = new URL(window.location.href);
-      const q = url.searchParams.toString();      // token=…&type=recovery
-      const h = window.location.hash.substring(1); // email=…
-      const params = [q, h].filter(s => s).join('&');
-      const deepLink = `io.supabase.flutter://reset-password?${params}`;
-      // Logga per debug (si vedrà nel browser console)
-      console.log('Redirecting to:', deepLink);
+      // Prendi tutti i parametri in query
+      const qp = url.searchParams;
+      // Prendi tutti i parametri nel frammento
+      const fp = new URLSearchParams(window.location.hash.substring(1));
+      // Uniscili in un unico set
+      const all = new URLSearchParams([...qp, ...fp]);
+      // Costruisci il deep link
+      const deepLink = 'io.supabase.flutter://reset-password?' + all.toString();
+      console.log('Deep link generato:', deepLink);
+      // Esegui il redirect
       window.location.replace(deepLink);
     });
   </script>
 </head>
 <body>
-  <p>Reindirizzamento in corso… Apri la console per vedere i dettagli.</p>
+  <p>Reindirizzamento in corso…<br/>Apri la console del browser per vedere i dettagli.</p>
 </body>
 </html>
 
