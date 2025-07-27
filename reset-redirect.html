@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
+  <title>Reset Redirect</title>
   <script>
-    function redirectToApp() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      
-      const token = params.get('token');
-      const email = params.get('email');
-      const type = params.get('type');
-      
-      if (type === 'recovery' && token && email) {
-        window.location.href = 
-          `io.supabase.flutter://reset-password/?type=recovery&token=${token}&email=${email}`;
-      } else {
-        document.getElementById('error').textContent = 'Parametri mancanti';
-      }
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      // Prende i parametri della query
+      const url = new URL(window.location.href);
+      const q = url.searchParams.toString();            // "token=...&type=recovery"
+      // Prende i parametri dell'hash (se supabase li mette lì)
+      const h = window.location.hash.substring(1);       // "email=you@example.com"
+      // Unisce entrambi
+      const all = [q, h].filter(s => s.length).join('&');
+      // Costruisce il deep link
+      const dl = `io.supabase.flutter://reset-password?${all}`;
+      // Inoltro definitivo
+      window.location.replace(dl);
+    });
   </script>
 </head>
-<body onload="redirectToApp()">
-  <p>Reindirizzamento in corso...</p>
-  <p id="error" style="color: red;"></p>
+<body>
+  <p>Reindirizzamento in corso…</p>
 </body>
 </html>
+
