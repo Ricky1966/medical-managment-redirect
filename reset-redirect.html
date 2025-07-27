@@ -6,22 +6,20 @@
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const url = new URL(window.location.href);
-      // Prende tutto ciò che c’è in query (?token=…&type=recovery)
-      const q = url.searchParams.toString();
-      // Prende ciò che c’è nel fragment (#email=…)
-      const h = window.location.hash.substring(1);
-      // Unisce query e frammento
+      const q = url.searchParams.toString();      // token=…&type=recovery
+      const h = window.location.hash.substring(1); // email=…
       const params = [q, h].filter(s => s).join('&');
-      // Costruisce il deep link completo
       const deepLink = `io.supabase.flutter://reset-password?${params}`;
-      // Reindirizzamento
+      // Logga per debug (si vedrà nel browser console)
+      console.log('Redirecting to:', deepLink);
       window.location.replace(deepLink);
     });
   </script>
 </head>
 <body>
-  <p>Reindirizzamento in corso…</p>
+  <p>Reindirizzamento in corso… Apri la console per vedere i dettagli.</p>
 </body>
 </html>
+
 
 
