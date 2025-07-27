@@ -5,17 +5,17 @@
   <title>Reset Redirect</title>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      // Prende i parametri della query
       const url = new URL(window.location.href);
-      const q = url.searchParams.toString();            // "token=...&type=recovery"
-      // Prende i parametri dell'hash (se supabase li mette lì)
-      const h = window.location.hash.substring(1);       // "email=you@example.com"
-      // Unisce entrambi
-      const all = [q, h].filter(s => s.length).join('&');
-      // Costruisce il deep link
-      const dl = `io.supabase.flutter://reset-password?${all}`;
-      // Inoltro definitivo
-      window.location.replace(dl);
+      // Prende tutto ciò che c’è in query (?token=…&type=recovery)
+      const q = url.searchParams.toString();
+      // Prende ciò che c’è nel fragment (#email=…)
+      const h = window.location.hash.substring(1);
+      // Unisce query e frammento
+      const params = [q, h].filter(s => s).join('&');
+      // Costruisce il deep link completo
+      const deepLink = `io.supabase.flutter://reset-password?${params}`;
+      // Reindirizzamento
+      window.location.replace(deepLink);
     });
   </script>
 </head>
@@ -23,4 +23,5 @@
   <p>Reindirizzamento in corso…</p>
 </body>
 </html>
+
 
