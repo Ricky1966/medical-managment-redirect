@@ -6,27 +6,21 @@
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const url = new URL(window.location.href);
-      // query params (token, type, redirect_to, ecc)
-      const qp = url.searchParams;
-      // fragment params (email, ecc)
-      const fp = new URLSearchParams(window.location.hash.substring(1));
-      // unisci tutto
+      const qp = url.searchParams;                    // token, type, redirect_to
+      const fp = new URLSearchParams(window.location.hash.substring(1)); // eventuali fragment
       const params = new URLSearchParams([...qp, ...fp]);
-      const type  = params.get('type');      // "recovery" o "signup"
+      const type   = params.get('type');              // "recovery" o "signup"
       if (!type) return;
-      // scegli host deep-link
-      let host;
-      if (type === 'recovery') {
-        host = 'reset-password';
-      } else if (type === 'signup') {
-        host = 'login-callback';
-      } else {
-        return;
-      }
-      // costruisci deep link
+      // scegli l’host corretto
+      const host = type === 'recovery'
+        ? 'reset-password'
+        : type === 'signup'
+          ? 'login-callback'
+          : null;
+      if (!host) return;
+      // costruisci e invia il deep-link
       const link = `io.supabase.flutter://${host}?${params.toString()}`;
       console.log('Deep link:', link);
-      // inoltra all'app
       window.location.replace(link);
     });
   </script>
