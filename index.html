@@ -1,11 +1,37 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Email confermata</title>
+  <meta charset="utf-8">
+  <title>Auth Redirect</title>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const url = new URL(window.location.href);
+      // query params (token, type, redirect_to, ecc)
+      const qp = url.searchParams;
+      // fragment params (email, ecc)
+      const fp = new URLSearchParams(window.location.hash.substring(1));
+      // unisci tutto
+      const params = new URLSearchParams([...qp, ...fp]);
+      const type  = params.get('type');      // "recovery" o "signup"
+      if (!type) return;
+      // scegli host deep-link
+      let host;
+      if (type === 'recovery') {
+        host = 'reset-password';
+      } else if (type === 'signup') {
+        host = 'login-callback';
+      } else {
+        return;
+      }
+      // costruisci deep link
+      const link = `io.supabase.flutter://${host}?${params.toString()}`;
+      console.log('Deep link:', link);
+      // inoltra all'app
+      window.location.replace(link);
+    });
+  </script>
 </head>
 <body>
-  <h1>Email confermata con successo</h1>
-  <p>Ora puoi chiudere questa pagina e tornare all'app.</p>
+  <p>Reindirizzamento in corso… apri la console per i dettagli.</p>
 </body>
 </html>
