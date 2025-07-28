@@ -5,27 +5,30 @@
   <title>Auth Redirect</title>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const url = new URL(window.location.href);
-      const qp = url.searchParams;                    // token, type, redirect_to
-      const fp = new URLSearchParams(window.location.hash.substring(1)); // eventuali fragment
-      const params = new URLSearchParams([...qp, ...fp]);
-      const type   = params.get('type');              // "recovery" o "signup"
-      if (!type) return;
-      // scegli l’host corretto
-      const host = type === 'recovery'
-        ? 'reset-password'
-        : type === 'signup'
-          ? 'login-callback'
-          : null;
-      if (!host) return;
-      // costruisci e invia il deep-link
-      const link = `io.supabase.flutter://${host}?${params.toString()}`;
-      console.log('Deep link:', link);
-      window.location.replace(link);
+      const url    = new URL(window.location.href);
+      const params = new URLSearchParams([...url.searchParams]);
+
+      // supabase aggiunge automaticamente  token & type=
+      const type = params.get('type');  // "signup" o "recovery"
+      let host;
+      if (type === 'recovery') {
+        host = 'reset-password';
+      } else if (type === 'signup') {
+        host = 'login-callback';
+      } else {
+        console.error('Unknown auth type:', type);
+        return;
+      }
+
+      // ricomponi tutti i parametri (incluso email se c’è)
+      const deepLink = `io.supabase.flutter://${host}?${params.toString()}`;
+      console.log('➔ Deep link:', deepLink);
+      window.location.replace(deepLink);
     });
   </script>
 </head>
 <body>
-  <p>Reindirizzamento in corso… apri la console per i dettagli.</p>
+  <p>Reindirizzamento in corso… apri la console (F12) per i dettagli.</p>
 </body>
 </html>
+
