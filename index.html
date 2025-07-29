@@ -6,6 +6,7 @@
   <style>
     body { font-family: sans-serif; padding: 16px; }
     h1 { font-size: 1.2rem; margin: 8px 0; }
+    #countdown { margin-top: 16px; font-weight: bold; }
     hr { margin: 24px 0; }
   </style>
 </head>
@@ -15,19 +16,20 @@
   <hr>
   <h1>▶️ Generated Deeplink</h1>
   <div id="deeplink"></div>
+  <div id="countdown"></div>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const url    = new URL(window.location.href);
-      // prendi tutti i parametri da query e fragment
+      // raccogli query + fragment
       const params = new URLSearchParams([
         ...url.searchParams,
         ...url.hash.substring(1).split('&').map(p => p.split('=')),
       ]);
 
+      // mostra i parametri chiave
       const keys = ['token','code','type','email','error','error_code','error_description'];
       const container = document.getElementById('params');
-
       keys.forEach(key => {
         if (params.has(key)) {
           const h = document.createElement('h1');
@@ -36,14 +38,28 @@
         }
       });
 
-      // costruisci il deeplink
+      // determina host deep-link
       let host = params.get('type') === 'recovery' ? 'reset-password' : 'login-callback';
       if (!params.get('type') && params.has('code')) {
-        // fallback: se arriva solo code senza type, assume signup
         host = 'login-callback';
       }
       const deepLink = `io.supabase.flutter://${host}?${params.toString()}`;
       document.getElementById('deeplink').innerText = deepLink;
+
+      // countdown di 2 minuti prima del redirect
+      let remaining = 120; // secondi
+      const cdElem = document.getElementById('countdown');
+      cdElem.textContent = `Redirect tra ${remaining} secondi…`;
+      const interval = setInterval(() => {
+        remaining--;
+        if (remaining > 0) {
+          cdElem.textContent = `Redirect tra ${remaining} secondi…`;
+        } else {
+          clearInterval(interval);
+          cdElem.textContent = 'Eseguo redirect ora…';
+          window.location.replace(deepLink);
+        }
+      }, 1000);
     });
   </script>
 </body>
