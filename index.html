@@ -2,37 +2,49 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Auth Redirect</title>
+  <title>Auth Redirect (Dev Debug)</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; }
+    h1 { font-size: 1.2rem; margin: 8px 0; }
+    hr { margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Debug Deep-Link Params</h1>
+  <div id="params"></div>
+  <hr>
+  <h1>▶️ Generated Deeplink</h1>
+  <div id="deeplink"></div>
+
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const url    = new URL(window.location.href);
-      const params = new URLSearchParams([...url.searchParams]);
+      // prendi tutti i parametri da query e fragment
+      const params = new URLSearchParams([
+        ...url.searchParams,
+        ...url.hash.substring(1).split('&').map(p => p.split('=')),
+      ]);
 
-      // Se manca type ma c'è il code + email, assumiamo signup
-      let type = params.get('type');
-      if (!type && params.has('code') && params.has('email')) {
-        type = 'signup';
-        params.set('type', 'signup');
-      }
+      const keys = ['token','code','type','email','error','error_code','error_description'];
+      const container = document.getElementById('params');
 
-      let host;
-      if (type === 'recovery') {
-        host = 'reset-password';
-      } else if (type === 'signup') {
+      keys.forEach(key => {
+        if (params.has(key)) {
+          const h = document.createElement('h1');
+          h.textContent = `${key}: ${params.get(key)}`;
+          container.appendChild(h);
+        }
+      });
+
+      // costruisci il deeplink
+      let host = params.get('type') === 'recovery' ? 'reset-password' : 'login-callback';
+      if (!params.get('type') && params.has('code')) {
+        // fallback: se arriva solo code senza type, assume signup
         host = 'login-callback';
-      } else {
-        console.error('Unknown auth type:', type, params.toString());
-        return;
       }
-
-      // Ricostruisco tutti i parametri inclusi (ora anche type)
       const deepLink = `io.supabase.flutter://${host}?${params.toString()}`;
-      console.log('➔ Deep link:', deepLink);
-      window.location.replace(deepLink);
+      document.getElementById('deeplink').innerText = deepLink;
     });
   </script>
-</head>
-<body>
-  <p>Reindirizzamento in corso… apri la console (F12) per i dettagli.</p>
 </body>
 </html>
