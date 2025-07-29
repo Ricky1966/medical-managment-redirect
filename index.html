@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -20,7 +19,7 @@
       word-wrap: break-word;
     }
     textarea { height: 4em; }
-    button { padding: 10px 16px; font-size: 1rem; }
+    button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -37,47 +36,53 @@
   <button id="btn-go">Apri app con deep-link</button>
 
   <script>
-    (() => {
+    (function() {
       const url = new URL(window.location.href);
 
-      // Popola query params
-      const qs    = url.searchParams;
-      const qelist = [];
-      qs.forEach((v, k) => qelist.push(`${k} = ${decodeURIComponent(v)}`));
+      // Parametri in query
+      const qs = url.searchParams;
+      const qList = [];
+      qs.forEach((v, k) => qList.push(`${k} = ${decodeURIComponent(v)}`));
       document.getElementById('out-query').textContent =
-        qelist.length ? qelist.join('\n') : '(nessuno)';
+        qList.length ? qList.join('\n') : '(nessuno)';
 
-      // Popola fragment params
+      // Parametri in fragment
       const frag = new URLSearchParams(url.hash.substring(1));
-      const flist = [];
-      frag.forEach((v, k) => flist.push(`${k} = ${decodeURIComponent(v)}`));
+      const fList = [];
+      frag.forEach((v, k) => fList.push(`${k} = ${decodeURIComponent(v)}`));
       document.getElementById('out-fragment').textContent =
-        flist.length ? flist.join('\n') : '(nessuno)';
+        fList.length ? fList.join('\n') : '(nessuno)';
 
-      // Unisci e costruisci deep-link
+      // Unisco query+fragment in allParams
       const all = {};
-      qs.forEach((v,k) => all[k] = v);
-      frag.forEach((v,k) => all[k] = v);
-      let type = all.type;
-      if (!type && all.code && all.email) type = 'signup';
-      const host = type === 'recovery' ? 'reset-password' : 'login-callback';
-      const params = Object.entries(all)
-        .map(([k,v]) => `${k}=${encodeURIComponent(v)}`)
-        .join('&');
-      const deeplink = `io.supabase.flutter://${host}?${params}`;
+      qs.forEach((v, k) => all[k] = v);
+      frag.forEach((v, k) => all[k] = v);
 
-      // Mostra il deeplink
+      // Fallback: se manca type ma ci sono code+email, inietto signup
+      if (!all.type && all.code && all.email) {
+        all.type = 'signup';
+      }
+
+      // Decido host in base a type
+      const host = all.type === 'recovery' ? 'reset-password' : 'login-callback';
+
+      // Ricostruisco param string
+      const params = Object.entries(all)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&');
+
+      const deeplink = `io.supabase.flutter://${host}?${params}`;
       const dlElem = document.getElementById('out-deeplink');
       dlElem.value = deeplink;
 
-      // Copia in clipboard
+      // Bottone Copia
       document.getElementById('btn-copy').addEventListener('click', () => {
         dlElem.select();
         document.execCommand('copy');
         alert('Deep-link copiato negli appunti');
       });
 
-      // Apri l'app
+      // Bottone Apri
       document.getElementById('btn-go').addEventListener('click', () => {
         window.location.href = deeplink;
       });
