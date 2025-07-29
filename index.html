@@ -5,87 +5,65 @@
   <title>Auth Redirect Debug (Dev)</title>
   <style>
     body { font-family: sans-serif; padding: 16px; }
-    h1 { font-size: 1.1rem; margin: 12px 0 4px; }
-    pre, textarea {
-      width: 100%;
-      box-sizing: border-box;
-      background: #f0f0f0;
-      padding: 8px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      margin-bottom: 16px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    textarea { height: 4em; }
-    button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
+    h1 { font-size: 1.2rem; margin: 12px 0; }
+    p { margin: 8px 0; }
+    button { margin: 8px 8px 0 0; padding: 10px 16px; font-size: 1rem; }
+    pre { background: #f0f0f0; padding: 8px; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <h1>🔍 Parametri (query)</h1>
-  <pre id="out-query">(caricamento…)</pre>
+  <h1>🔍 Debug Deep-Link Params</h1>
+  <pre id="out-params">(caricamento…)</pre>
 
-  <h1>🔍 Parametri (fragment)</h1>
-  <pre id="out-fragment">(caricamento…)</pre>
+  <div id="error-block" style="display:none;">
+    <h1 style="color:#c00">❌ Errore di verifica</h1>
+    <p id="error-msg"></p>
+    <button onclick="location.href='login.html'">
+      Torna al login
+    </button>
+  </div>
 
-  <h1>▶️ Deep-link calcolato</h1>
-  <textarea id="out-deeplink" readonly>(caricamento…)</textarea>
-
-  <button id="btn-copy">Copia deep-link</button>
-  <button id="btn-go">Apri app con deep-link</button>
+  <div id="success-block" style="display:none;">
+    <h1>▶️ Deep-link calcolato</h1>
+    <pre id="out-deeplink"></pre>
+    <button id="btn-go">Apri app con deep-link</button>
+  </div>
 
   <script>
     (function() {
-      const url = new URL(window.location.href);
+      const url    = new URL(window.location.href);
+      // raccogli tutti i parametri da query + fragment
+      const qp = [...url.searchParams.entries()];
+      const fp = url.hash
+        .substring(1)
+        .split('&')
+        .map(p => p.split('='))
+        .filter(([k,v]) => k);
+      const all = Object.fromEntries([...qp, ...fp]);
 
-      // Parametri in query
-      const qs = url.searchParams;
-      const qList = [];
-      qs.forEach((v, k) => qList.push(`${k} = ${decodeURIComponent(v)}`));
-      document.getElementById('out-query').textContent =
-        qList.length ? qList.join('\n') : '(nessuno)';
+      // stampa parametri raw
+      document.getElementById('out-params').textContent =
+        JSON.stringify(all, null, 2);
 
-      // Parametri in fragment
-      const frag = new URLSearchParams(url.hash.substring(1));
-      const fList = [];
-      frag.forEach((v, k) => fList.push(`${k} = ${decodeURIComponent(v)}`));
-      document.getElementById('out-fragment').textContent =
-        fList.length ? fList.join('\n') : '(nessuno)';
-
-      // Unisco query+fragment in allParams
-      const all = {};
-      qs.forEach((v, k) => all[k] = v);
-      frag.forEach((v, k) => all[k] = v);
-
-      // Fallback: se manca type ma ci sono code+email, inietto signup
-      if (!all.type && all.code && all.email) {
-        all.type = 'signup';
+      // se c'è errore, mostro il blocco error
+      if (all.error) {
+        document.getElementById('error-msg').textContent =
+          all.error_description || all.error;
+        document.getElementById('error-block').style.display = 'block';
+        return;
       }
 
-      // Decido host in base a type
-      const host = all.type === 'recovery' ? 'reset-password' : 'login-callback';
-
-      // Ricostruisco param string
-      const params = Object.entries(all)
-        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-        .join('&');
-
+      // altrimenti calcolo il deeplink
+      let type = all.type;
+      if (!type && all.code && all.email) type = 'signup';
+      const host = type === 'recovery' ? 'reset-password' : 'login-callback';
+      const params = new URLSearchParams(all).toString();
       const deeplink = `io.supabase.flutter://${host}?${params}`;
-      const dlElem = document.getElementById('out-deeplink');
-      dlElem.value = deeplink;
 
-      // Bottone Copia
-      document.getElementById('btn-copy').addEventListener('click', () => {
-        dlElem.select();
-        document.execCommand('copy');
-        alert('Deep-link copiato negli appunti');
-      });
-
-      // Bottone Apri
-      document.getElementById('btn-go').addEventListener('click', () => {
-        window.location.href = deeplink;
-      });
+      document.getElementById('out-deeplink').textContent = deeplink;
+      document.getElementById('success-block').style.display = 'block';
+      document.getElementById('btn-go')
+        .addEventListener('click', () => window.location.href = deeplink);
     })();
   </script>
 </body>
