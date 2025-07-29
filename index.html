@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -5,59 +6,78 @@
   <title>Auth Redirect Debug (Dev)</title>
   <style>
     body { font-family: sans-serif; padding: 16px; }
-    h1 { font-size: 1.2rem; margin: 12px 0 4px; }
-    pre { background:#f0f0f0; padding:8px; border-radius:4px; }
-    button { margin-top:16px; padding:12px 20px; font-size:1rem; }
+    h1 { font-size: 1.1rem; margin: 12px 0 4px; }
+    pre, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    textarea { height: 4em; }
+    button { padding: 10px 16px; font-size: 1rem; }
   </style>
 </head>
 <body>
   <h1>🔍 Parametri (query)</h1>
-  <pre id="out-query"></pre>
+  <pre id="out-query">(caricamento…)</pre>
 
   <h1>🔍 Parametri (fragment)</h1>
-  <pre id="out-fragment"></pre>
+  <pre id="out-fragment">(caricamento…)</pre>
 
   <h1>▶️ Deep-link calcolato</h1>
-  <pre id="out-deeplink"></pre>
+  <textarea id="out-deeplink" readonly>(caricamento…)</textarea>
 
+  <button id="btn-copy">Copia deep-link</button>
   <button id="btn-go">Apri app con deep-link</button>
 
   <script>
     (() => {
       const url = new URL(window.location.href);
 
-      // 1) Parametri in query string
-      const qs = url.searchParams;
-      const entriesQs = [];
-      qs.forEach((v,k) => entriesQs.push(`${k} = ${decodeURIComponent(v)}`));
+      // Popola query params
+      const qs    = url.searchParams;
+      const qelist = [];
+      qs.forEach((v, k) => qelist.push(`${k} = ${decodeURIComponent(v)}`));
       document.getElementById('out-query').textContent =
-        entriesQs.length ? entriesQs.join('\n') : '(nessuno)';
+        qelist.length ? qelist.join('\n') : '(nessuno)';
 
-      // 2) Parametri in fragment (#...)
+      // Popola fragment params
       const frag = new URLSearchParams(url.hash.substring(1));
-      const entriesFrag = [];
-      frag.forEach((v,k) => entriesFrag.push(`${k} = ${decodeURIComponent(v)}`));
+      const flist = [];
+      frag.forEach((v, k) => flist.push(`${k} = ${decodeURIComponent(v)}`));
       document.getElementById('out-fragment').textContent =
-        entriesFrag.length ? entriesFrag.join('\n') : '(nessuno)';
+        flist.length ? flist.join('\n') : '(nessuno)';
 
-      // 3) Unione e determinazione host
+      // Unisci e costruisci deep-link
       const all = {};
       qs.forEach((v,k) => all[k] = v);
       frag.forEach((v,k) => all[k] = v);
-
       let type = all.type;
-      // fallback: se non c'è type ma c'è code/email, assumiamo signup
       if (!type && all.code && all.email) type = 'signup';
       const host = type === 'recovery' ? 'reset-password' : 'login-callback';
-
-      // 4) Costruzione deep-link
       const params = Object.entries(all)
         .map(([k,v]) => `${k}=${encodeURIComponent(v)}`)
         .join('&');
       const deeplink = `io.supabase.flutter://${host}?${params}`;
-      document.getElementById('out-deeplink').textContent = deeplink;
 
-      // 5) Bottone per attivare il deeplink manualmente
+      // Mostra il deeplink
+      const dlElem = document.getElementById('out-deeplink');
+      dlElem.value = deeplink;
+
+      // Copia in clipboard
+      document.getElementById('btn-copy').addEventListener('click', () => {
+        dlElem.select();
+        document.execCommand('copy');
+        alert('Deep-link copiato negli appunti');
+      });
+
+      // Apri l'app
       document.getElementById('btn-go').addEventListener('click', () => {
         window.location.href = deeplink;
       });
