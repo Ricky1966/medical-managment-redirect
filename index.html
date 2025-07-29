@@ -8,19 +8,24 @@
       const url    = new URL(window.location.href);
       const params = new URLSearchParams([...url.searchParams]);
 
-      // supabase aggiunge automaticamente  token & type=
-      const type = params.get('type');  // "signup" o "recovery"
+      // Se manca type ma c'è il code + email, assumiamo signup
+      let type = params.get('type');
+      if (!type && params.has('code') && params.has('email')) {
+        type = 'signup';
+        params.set('type', 'signup');
+      }
+
       let host;
       if (type === 'recovery') {
         host = 'reset-password';
       } else if (type === 'signup') {
         host = 'login-callback';
       } else {
-        console.error('Unknown auth type:', type);
+        console.error('Unknown auth type:', type, params.toString());
         return;
       }
 
-      // ricomponi tutti i parametri (incluso email se c’è)
+      // Ricostruisco tutti i parametri inclusi (ora anche type)
       const deepLink = `io.supabase.flutter://${host}?${params.toString()}`;
       console.log('➔ Deep link:', deepLink);
       window.location.replace(deepLink);
@@ -31,4 +36,3 @@
   <p>Reindirizzamento in corso… apri la console (F12) per i dettagli.</p>
 </body>
 </html>
-
