@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Auth Redirect Debug (Dev)</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; }
+    h1 { font-size: 1.2rem; margin: 12px 0; }
+    pre, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    textarea { height: 4em; }
+    button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Parametri ricevuti</h1>
+  <pre id="out-params">(caricamento…)</pre>
 
+  <h1>▶️ Deep-link calcolato</h1>
+  <textarea id="out-deeplink" readonly>(caricamento…)</textarea>
+
+  <button id="btn-copy">Copia deep-link</button>
+  <button id="btn-go">Apri app con deep-link</button>
+
+  <script>
+    (function() {
+      const url = new URL(window.location.href);
+
+      // 1) Inizializzo params con la query string
+      const params = new URLSearchParams(url.search);
+
+      // 2) Aggiungo i parametri dal fragment (#...)
+      if (url.hash && url.hash.length > 1) {
+        const frag = new URLSearchParams(url.hash.substring(1));
+        for (const [k, v] of frag.entries()) {
+          params.set(k, v);
+        }
+      }
+
+      // 3) Fallback: se mancano type ma ci sono code+email
+      if (!params.has('type') && params.has('code') && params.has('email')) {
+        params.set('type', 'signup');
+      }
+
+      // 4) Creo un oggetto per la visualizzazione
+      const obj = {};
+      for (const [k, v] of params.entries()) {
+        obj[k] = decodeURIComponent(v);
+      }
+      document.getElementById('out-params').textContent =
+        JSON.stringify(obj, null, 2);
+
+      // 5) Determino l’host e ricostruisco il deep-link
+      const type = params.get('type');
+      const host = type === 'recovery' ? 'reset-password' : 'login-callback';
+      const deepLink = `io.supabase.flutter://${host}?${params.toString()}`;
+
+      const dlElem = document.getElementById('out-deeplink');
+      dlElem.value = deepLink;
+
+      // 6) Copia e apri
+      document.getElementById('btn-copy').onclick = () => {
+        dlElem.select();
+        document.execCommand('copy');
+        alert('Deep-link copiato negli appunti');
+      };
+      document.getElementById('btn-go').onclick = () => {
+        window.location.href = deepLink;
+      };
+    })();
+  </script>
+</body>
+</html>
