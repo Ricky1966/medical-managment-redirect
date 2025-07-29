@@ -6,33 +6,37 @@
   <style>
     body { font-family: sans-serif; padding: 16px; }
     h1 { font-size: 1.2rem; margin: 12px 0; }
-    p { margin: 8px 0; }
-    button { margin: 8px 8px 0 0; padding: 10px 16px; font-size: 1rem; }
-    pre { background: #f0f0f0; padding: 8px; border-radius: 4px; }
+    pre, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    textarea { height: 4em; }
+    button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
   </style>
 </head>
 <body>
-  <h1>🔍 Debug Deep-Link Params</h1>
+  <h1>🔍 Parametri ricevuti</h1>
   <pre id="out-params">(caricamento…)</pre>
 
-  <div id="error-block" style="display:none;">
-    <h1 style="color:#c00">❌ Errore di verifica</h1>
-    <p id="error-msg"></p>
-    <button onclick="location.href='login.html'">
-      Torna al login
-    </button>
-  </div>
+  <h1>▶️ Deep-link calcolato</h1>
+  <textarea id="out-deeplink" readonly>(caricamento…)</textarea>
 
-  <div id="success-block" style="display:none;">
-    <h1>▶️ Deep-link calcolato</h1>
-    <pre id="out-deeplink"></pre>
-    <button id="btn-go">Apri app con deep-link</button>
-  </div>
+  <button id="btn-copy">Copia deep-link</button>
+  <button id="btn-go">Apri app con deep-link</button>
 
   <script>
     (function() {
-      const url    = new URL(window.location.href);
-      // raccogli tutti i parametri da query + fragment
+      const url  = new URL(window.location.href);
+
+      // 1) leggi query + fragment
       const qp = [...url.searchParams.entries()];
       const fp = url.hash
         .substring(1)
@@ -41,29 +45,38 @@
         .filter(([k,v]) => k);
       const all = Object.fromEntries([...qp, ...fp]);
 
-      // stampa parametri raw
+      // 2) mostra raw params
       document.getElementById('out-params').textContent =
         JSON.stringify(all, null, 2);
 
-      // se c'è errore, mostro il blocco error
-      if (all.error) {
-        document.getElementById('error-msg').textContent =
-          all.error_description || all.error;
-        document.getElementById('error-block').style.display = 'block';
-        return;
+      // 3) fallback type=signup se mancante
+      if (!all.type && all.code && all.email) {
+        all.type = 'signup';
       }
 
-      // altrimenti calcolo il deeplink
-      let type = all.type;
-      if (!type && all.code && all.email) type = 'signup';
-      const host = type === 'recovery' ? 'reset-password' : 'login-callback';
-      const params = new URLSearchParams(all).toString();
+      // 4) scegli host in base a type
+      const host = all.type === 'recovery' ? 'reset-password' : 'login-callback';
+
+      // 5) ricostruisci param string includendo ora all.type
+      const params = Object.entries(all)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&');
+
       const deeplink = `io.supabase.flutter://${host}?${params}`;
 
-      document.getElementById('out-deeplink').textContent = deeplink;
-      document.getElementById('success-block').style.display = 'block';
+      // 6) mostra e copia / apri
+      const dlElem = document.getElementById('out-deeplink');
+      dlElem.value = deeplink;
+      document.getElementById('btn-copy')
+        .addEventListener('click', () => {
+          dlElem.select();
+          document.execCommand('copy');
+          alert('Deep-link copiato negli appunti');
+        });
       document.getElementById('btn-go')
-        .addEventListener('click', () => window.location.href = deeplink);
+        .addEventListener('click', () => {
+          window.location.href = deeplink;
+        });
     })();
   </script>
 </body>
