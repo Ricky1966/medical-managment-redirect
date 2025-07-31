@@ -28,51 +28,45 @@
   <button id="btn-go">Apri app con deep-link</button>
 
   <script>
-    (function() {
-      const url = new URL(window.location.href);
-      const params = new URLSearchParams(url.search);
+  (function() {
+    const url    = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
 
-      // Parsiamo anche il fragment (#...)
-      if (url.hash && url.hash.length > 1) {
-        const frag = new URLSearchParams(url.hash.substring(1));
-        for (const [k, v] of frag.entries()) {
-          params.set(k, v);
-        }
-      }
+    if (url.hash && url.hash.length > 1) {
+      const frag = new URLSearchParams(url.hash.substring(1));
+      for (const [k, v] of frag.entries()) params.set(k, v);
+    }
 
-      // Debug params
-      const obj = {};
-      for (const [k, v] of params.entries()) {
-        obj[k] = decodeURIComponent(v);
-      }
-      document.getElementById('out-params').textContent =
-        JSON.stringify(obj, null, 2);
+    // Stampo i parametri ricevuti
+    const obj = {};
+    for (const [k, v] of params.entries()) obj[k] = decodeURIComponent(v);
+    document.getElementById('out-params').textContent =
+      JSON.stringify(obj, null, 2);
 
-      // Costruisco il deep-link
-      const type = params.get('type');
-      const token = params.get('token') || params.get('code');
-      const email = params.get('email') || '';
-      if (!type || !token) return;  // niente da fare
+    // Preparo token/type/email
+    const token = params.get('token') || params.get('code');
+    const type  = params.get('type');
+    if (!token || !type) return;
 
-      const host = (type === 'recovery') ? 'reset-password' : 'login-callback';
-      // ** backticks qui **
-      const deepLink = `io.supabase.flutter://${host}?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;
+    const host = (type === 'recovery') ? 'reset-password' : 'login-callback';
+    // ← backticks obbligatori qui
+    const deepLink = `io.supabase.flutter://${host}?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&email=${encodeURIComponent(params.get('email')||'')}`;
 
-      // Inietto nel textarea
-      const dlElem = document.getElementById('out-deeplink');
-      dlElem.value = deepLink;
+    // Inietto il deeplink nel textarea
+    const dlElem = document.getElementById('out-deeplink');
+    dlElem.value = deepLink;
 
-      // Copia
-      document.getElementById('btn-copy').onclick = () => {
-        dlElem.select();
-        document.execCommand('copy');
-        alert('Deep-link copiato negli appunti');
-      };
-      // Apri app
-      document.getElementById('btn-go').onclick = () => {
-        window.location.href = deepLink;
-      };
-    })();
-  </script>
+    // Copia negli appunti
+    document.getElementById('btn-copy').onclick = () => {
+      dlElem.select();
+      document.execCommand('copy');
+      alert('Deep-link copiato negli appunti');
+    };
+    // Apri app
+    document.getElementById('btn-go').onclick = () => {
+      window.location.href = deepLink;
+    };
+  })();
+</script>
 </body>
 </html>
