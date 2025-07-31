@@ -7,16 +7,11 @@
     body { font-family: sans-serif; padding: 16px; }
     h1 { font-size: 1.2rem; margin: 12px 0; }
     pre, textarea {
-      width: 100%;
-      box-sizing: border-box;
-      background: #f0f0f0;
-      padding: 8px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      margin-bottom: 16px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      width: 100%; box-sizing: border-box;
+      background: #f0f0f0; padding: 8px;
+      border-radius: 4px; font-family: monospace;
+      font-size: 0.9rem; margin-bottom: 16px;
+      white-space: pre-wrap; word-wrap: break-word;
     }
     textarea { height: 4em; }
     button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
@@ -35,11 +30,9 @@
   <script>
     (function() {
       const url = new URL(window.location.href);
-
-      // 1) Inizializzo params con la query string
       const params = new URLSearchParams(url.search);
 
-      // 2) Aggiungo i parametri dal fragment (#...)
+      // Parsiamo anche il fragment (#...)
       if (url.hash && url.hash.length > 1) {
         const frag = new URLSearchParams(url.hash.substring(1));
         for (const [k, v] of frag.entries()) {
@@ -47,12 +40,7 @@
         }
       }
 
-      // 3) Fallback: se mancano type ma ci sono code+email
-      if (!params.has('type') && params.has('code') && params.has('email')) {
-        params.set('type', 'signup');
-      }
-
-      // 4) Creo un oggetto per la visualizzazione
+      // Debug params
       const obj = {};
       for (const [k, v] of params.entries()) {
         obj[k] = decodeURIComponent(v);
@@ -60,20 +48,27 @@
       document.getElementById('out-params').textContent =
         JSON.stringify(obj, null, 2);
 
-      // 5) Determino l’host e ricostruisco il deep-link
+      // Costruisco il deep-link
       const type = params.get('type');
-      const host = type === 'recovery' ? 'reset-password' : 'login-callback';
-      const deepLink = io.supabase.flutter://${host}?${params.toString()};
+      const token = params.get('token') || params.get('code');
+      const email = params.get('email') || '';
+      if (!type || !token) return;  // niente da fare
 
+      const host = (type === 'recovery') ? 'reset-password' : 'login-callback';
+      // ** backticks qui **
+      const deepLink = `io.supabase.flutter://${host}?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;
+
+      // Inietto nel textarea
       const dlElem = document.getElementById('out-deeplink');
       dlElem.value = deepLink;
 
-      // 6) Copia e apri
+      // Copia
       document.getElementById('btn-copy').onclick = () => {
         dlElem.select();
         document.execCommand('copy');
         alert('Deep-link copiato negli appunti');
       };
+      // Apri app
       document.getElementById('btn-go').onclick = () => {
         window.location.href = deepLink;
       };
