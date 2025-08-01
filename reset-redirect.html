@@ -31,10 +31,10 @@
     (function() {
       const url       = new URL(window.location.href);
       const params    = new URLSearchParams(url.search);
-      const fullQuery = url.search;           // include ?token=…&type=…&email=…
-      const fullHash  = url.hash;             // include #access_token=…&refresh_token=… etc.
+      const fullQuery = url.search;  // es. "?code=…&email=…"
+      const fullHash  = url.hash;    // es. "#access_token=…&refresh_token=…"
 
-      // Parsiamo fragment in params per debug
+      // Aggiungo i fragment params dentro params per debug
       if (url.hash.length > 1) {
         const frag = new URLSearchParams(url.hash.slice(1));
         for (const [k, v] of frag.entries()) {
@@ -42,15 +42,12 @@
         }
       }
 
-      // Stampo i parametri ricevuti
-      const obj = {};
-      for (const [k, v] of params.entries()) {
-        obj[k] = decodeURIComponent(v);
-      }
+      // Mostro i params ricevuti
+      const obj = Object.fromEntries(params.entries());
       document.getElementById('out-params').textContent =
         JSON.stringify(obj, null, 2);
 
-      // Costruisco il deep-link completo
+      // Costruisco il deep-link, includendo query e hash
       const host     = 'reset-password';
       const deepLink = `io.supabase.flutter://${host}${fullQuery}${fullHash}`;
 
@@ -71,4 +68,3 @@
   </script>
 </body>
 </html>
-
