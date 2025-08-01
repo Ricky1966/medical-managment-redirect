@@ -1,29 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <meta charset="utf-8"/>
-  <title>Reset Redirect</title>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const url = new URL(window.location.href);
-      // Prendi tutti i parametri in query
-      const qp = url.searchParams;
-      // Prendi tutti i parametri nel frammento
-      const fp = new URLSearchParams(window.location.hash.substring(1));
-      // Uniscili in un unico set
-      const all = new URLSearchParams([...qp, ...fp]);
-      // Costruisci il deep link
-      const deepLink = 'io.supabase.flutter://reset-password?' + all.toString();
-      console.log('Deep link generato:', deepLink);
-      // Esegui il redirect
-      window.location.replace(deepLink);
-    });
-  </script>
+  <meta charset="utf-8">
+  <title>Reset Redirect Debug (Dev)</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; }
+    h1 { font-size: 1.2rem; margin: 12px 0; }
+    pre, textarea {
+      width: 100%; box-sizing: border-box;
+      background: #f0f0f0; padding: 8px;
+      border-radius: 4px; font-family: monospace;
+      font-size: 0.9rem; margin-bottom: 16px;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    textarea { height: 4em; }
+    button { margin-right: 8px; padding: 10px 16px; font-size: 1rem; }
+  </style>
 </head>
 <body>
-  <p>Reindirizzamento in corso…<br/>Apri la console del browser per vedere i dettagli.</p>
+  <h1>🔍 Parametri ricevuti (reset password)</h1>
+  <pre id="out-params">(caricamento…)</pre>
+
+  <h1>▶️ Deep-link calcolato</h1>
+  <textarea id="out-deeplink" readonly>(caricamento…)</textarea>
+
+  <button id="btn-copy">Copia deep-link</button>
+  <button id="btn-go">Apri app con deep-link</button>
+
+  <script>
+    (function() {
+      const url    = new URL(window.location.href);
+      const params = new URLSearchParams(url.search);
+
+      // Estendi con eventuali parametri nel fragment
+      if (url.hash && url.hash.length > 1) {
+        const frag = new URLSearchParams(url.hash.slice(1));
+        for (const [k, v] of frag.entries()) {
+          params.set(k, v);
+        }
+      }
+
+      // Mostro i parametri ricevuti
+      const obj = {};
+      for (const [k, v] of params.entries()) {
+        obj[k] = decodeURIComponent(v);
+      }
+      document.getElementById('out-params').textContent =
+        JSON.stringify(obj, null, 2);
+
+      // Prendo token/code ed email
+      const token = params.get('token') || params.get('code');
+      const email = params.get('email') || '';
+      const type  = params.get('type') || 'recovery'; 
+      // forziamo recovery se mancante
+
+      if (!token) {
+        // nulla da fare
+        return;
+      }
+
+      // Qui sempre reset-password
+      const host = 'reset-password';
+      const deepLink = `io.supabase.flutter://${host}?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;
+
+      // Inietto
+      const dlElem = document.getElementById('out-deeplink');
+      dlElem.value = deepLink;
+
+      // Azioni bottoni
+      document.getElementById('btn-copy').onclick = () => {
+        dlElem.select();
+        document.execCommand('copy');
+        alert('Deep-link copiato negli appunti');
+      };
+      document.getElementById('btn-go').onclick = () => {
+        window.location.href = deepLink;
+      };
+    })();
+  </script>
 </body>
 </html>
-
 
 
