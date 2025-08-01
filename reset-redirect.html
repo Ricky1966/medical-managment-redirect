@@ -27,65 +27,40 @@
   <button id="btn-copy">Copia deep-link</button>
   <button id="btn-go">Apri app con deep-link</button>
 
-  <script>
-    (function() {
-      const url    = new URL(window.location.href);
-      const params = new URLSearchParams(url.search);
+ <script>
+  (function() {
+    const url = new URL(window.location.href);
+    const host = 'reset-password';
 
-      // Estendi anche i parametri nel fragment (#...)
-      if (url.hash && url.hash.length > 1) {
-        const frag = new URLSearchParams(url.hash.slice(1));
-        for (const [k, v] of frag.entries()) {
-          params.set(k, v);
-        }
-      }
+    // Ricostruisco query + hash esatti
+    const fullQuery = url.search;   // es: "?token=…&type=recovery&email=…"
+    const fullHash  = url.hash;     // es: "#access_token=…&expires_in=…&refresh_token=…"
 
-      // Stampa a video i parametri ricevuti
-      const obj = {};
-      for (const [k, v] of params.entries()) {
-        obj[k] = decodeURIComponent(v);
-      }
-      document.getElementById('out-params').textContent =
-        JSON.stringify(obj, null, 2);
+    // Mostro parametri di debug
+    const params = new URLSearchParams(url.search);
+    if (url.hash.length > 1) {
+      const frag = new URLSearchParams(url.hash.slice(1));
+      frag.forEach((v,k) => params.set(k,v));
+    }
+    document.getElementById('out-params').textContent =
+      JSON.stringify(Object.fromEntries(params.entries()), null, 2);
 
-      // Ricava token e email (o code/email)
-      const token = params.get('token') || params.get('code');
-      const email = params.get('email') || '';
+    // Costruisco il deep link **includendo** search+hash
+    const deepLink = `io.supabase.flutter://${host}${fullQuery}${fullHash}`;
 
-      // Se manca type, forza recovery
-      let type = params.get('type');
-      if (!type) {
-        type = 'recovery';
-        params.set('type', type);
-      }
+    const dlElem = document.getElementById('out-deeplink');
+    dlElem.value = deepLink;
 
-      // Se ancora non ho token, esco
-      if (!token) return;
+    document.getElementById('btn-go').onclick = () => {
+      window.location.href = deepLink;
+    };
+    document.getElementById('btn-copy').onclick = () => {
+      dlElem.select();
+      document.execCommand('copy');
+      alert('Deep-link copiato');
+    };
+  })();
+</script>
 
-      // Costruisco il deeplink (sempre reset-password)
-      const host = 'reset-password';
-      const deepLink = 
-        `io.supabase.flutter://${host}` +
-        `?token=${encodeURIComponent(token)}` +
-        `&type=${encodeURIComponent(type)}` +
-        `&email=${encodeURIComponent(email)}`;
-
-      // Inietto nel textarea
-      const dlElem = document.getElementById('out-deeplink');
-      dlElem.value = deepLink;
-
-      // Copia negli appunti
-      document.getElementById('btn-copy').onclick = () => {
-        dlElem.select();
-        document.execCommand('copy');
-        alert('Deep-link copiato negli appunti');
-      };
-
-      // Apri app con deep-link
-      document.getElementById('btn-go').onclick = () => {
-        window.location.href = deepLink;
-      };
-    })();
-  </script>
 </body>
 </html>
