@@ -1,50 +1,36 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <title>Conferma Registrazione</title>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 2rem; }
     h1 { color: #2c3e50; }
-    button {
-      background: #3498db;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <h1>✔️ Registrazione confermata!</h1>
-  <p>Ora puoi tornare nella app per completare la configurazione.</p>
-  <button id="btn-go">Ritorna all’App</button>
+  <p>Se l’app è installata la sto aprendo… altrimenti torna all’app manualmente.</p>
 
   <script>
-    (function(){
-      const url    = new URL(window.location.href);
-      const params = new URLSearchParams(url.search);
-      const type   = params.get('type');
-      if (type !== 'signup') return;
+  (function(){
+    const url    = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    const type   = params.get('type');
+    if (type !== 'signup') return;
 
-      // ricava code/email da query
-      const code  = params.get('code') || params.get('token') || '';
-      const email = params.get('email') || '';
+    const code  = params.get('code')  || params.get('token') || '';
+    const email = params.get('email') || '';
 
-      // costruisci un deep-link custom che l'app riconoscerà
-      const dl = `io.supabase.flutter://return-to-app`
-               + `?type=signup`
-               + `&code=${encodeURIComponent(code)}`
-               + `&email=${encodeURIComponent(email)}`;
+    // deep-link verso l’app
+    const dl = `io.supabase.flutter://return-to-app`
+             + `?type=signup`
+             + `&code=${encodeURIComponent(code)}`
+             + `&email=${encodeURIComponent(email)}`;
 
-      const btn = document.getElementById('btn-go');
-      btn.onclick = () => {
-        window.location.href = dl;
-      };
-    })();
+    // Redirect immediato
+    window.location.replace(dl);
+  })();
   </script>
 </body>
 </html>
-
