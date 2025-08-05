@@ -3,23 +3,38 @@
 <head>
   <meta charset="utf-8"/>
   <title>Conferma Utente</title>
-  <style>body{text-align:center;padding:2rem;font-family:sans-serif}</style>
+  <style>
+    body {
+      text-align: center;
+      padding: 2rem;
+      font-family: sans-serif;
+    }
+  </style>
 </head>
 <body>
   <h1>✔️ Registrazione utente confermata!</h1>
   <p>Sto tornando all’app…</p>
   <script>
     (function(){
-      const u = new URL(location.href);
-      const p = u.searchParams;
-      if (p.get('type') !== 'signup') return;
-      const code  = p.get('code')||p.get('token');
+      const u     = new URL(window.location.href);
+      const p     = u.searchParams;
+      const type  = p.get('type');
+      const code  = p.get('code') || p.get('token');
       const email = p.get('email');
-      const dl = `io.supabase.flutter://return-to-user-app`
-               + `?type=signup`
-               + `&code=${encodeURIComponent(code)}`
-               + `&email=${encodeURIComponent(email)}`;
-      location.replace(dl);
+
+      // Se non è signup, non facciamo nulla
+      if (type !== 'signup' || !code || !email) return;
+
+      // Costruisco il deep-link per l'app
+      const dl = [
+        'io.supabase.flutter://return-to-user-app',
+        `type=${encodeURIComponent(type)}`,
+        `code=${encodeURIComponent(code)}`,
+        `email=${encodeURIComponent(email)}`
+      ].join('?').replace('?!', '?');
+
+      // Redirect immediato
+      window.location.replace(dl);
     })();
   </script>
 </body>
