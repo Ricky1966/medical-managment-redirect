@@ -61,7 +61,7 @@
     const query = params.toString();
 
     // Costruisce il deep link per l'app Flutter
-    const deepLink = 'io.supabase.flutter://login-callback/?' + query;
+    const deepLink = 'io.supabase.flutter://login-callback?' + query;
 
     // Imposta il link manuale
     document.getElementById('manual').setAttribute('href', deepLink);
