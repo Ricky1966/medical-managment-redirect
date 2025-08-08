@@ -3,55 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accesso a HealthCare</title>
+  <title>Conferma Registrazione HealthCare</title>
   <style>
     body {
+      margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #3f87a6, #ebf8e1);
-      color: #333;
+      background: #f0f4f8;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       text-align: center;
-      padding: 20px;
+      color: #333;
     }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { font-size: 1.2rem; }
+    .card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 { margin-bottom: 0.5rem; font-size: 1.8rem; }
+    p { margin: 0.5rem 0; }
     .loader {
-      margin-top: 20px;
-      border: 6px solid #f3f3f3;
+      margin-top: 1.5rem;
+      border: 6px solid #eee;
       border-top: 6px solid #3f87a6;
       border-radius: 50%;
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
-    a { color: #3f87a6; font-weight: bold; }
+    @keyframes spin {
+      0%   { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+    a {
+      color: #3f87a6;
+      text-decoration: none;
+      font-weight: bold;
+    }
   </style>
 </head>
+
 <body>
-  <h1>Accesso in corso...</h1>
-  <p>Verrai reindirizzato all’app per completare il login</p>
-  <p>Se non succede, <a id="manual-link" href="#">tocca qui</a>.</p>
-  <div class="loader"></div>
+  <div class="card">
+    <h1>Conferma registrazione in corso…</h1>
+    <p>Verrai portato automaticamente all’app HealthCare.</p>
+    <p>Se non succede, <a id="manual" href="#">tocca qui</a>.</p>
+    <div class="loader"></div>
+  </div>
 
   <script>
-    function getQueryParams() {
-      const params = {};
-      window.location.search.substring(1).split("&").forEach(pair => {
-        const [key, value] = pair.split("=");
-        if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || "");
-      });
-      return params;
-    }
+    // Prende tutti i parametri dalla query string
+    const params = new URLSearchParams(window.location.search);
+    const query = params.toString();
 
-    const params = getQueryParams();
-    const redirectUrl = "io.supabase.flutter://login-callback/?" + new URLSearchParams(params).toString();
+    // Costruisce il deep link per l'app Flutter
+    const deepLink = 'io.supabase.flutter://login-callback/?' + query;
 
-    document.getElementById("manual-link").setAttribute("href", redirectUrl);
-    setTimeout(() => { window.location.href = redirectUrl; }, 1200);
+    // Imposta il link manuale
+    document.getElementById('manual').setAttribute('href', deepLink);
+
+    // Effettua il redirect automatico dopo 1 secondo
+    setTimeout(() => {
+      window.location.href = deepLink;
+    }, 1000);
   </script>
 </body>
 </html>
