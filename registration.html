@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reindirizzamento a HealthCare</title>
+  <title>Accesso a HealthCare</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,35 +17,27 @@
       text-align: center;
       padding: 20px;
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-    p {
-      font-size: 1.2rem;
-    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    p { font-size: 1.2rem; }
     .loader {
       margin-top: 20px;
       border: 6px solid #f3f3f3;
       border-top: 6px solid #3f87a6;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+    a { color: #3f87a6; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Ti stiamo reindirizzando all’app...</h1>
-  <p>Se non succede automaticamente, <a id="manual-link" href="#">tocca qui</a>.</p>
+  <h1>Accesso in corso...</h1>
+  <p>Verrai reindirizzato all’app per completare il login</p>
+  <p>Se non succede, <a id="manual-link" href="#">tocca qui</a>.</p>
   <div class="loader"></div>
 
   <script>
-    // Funzione per estrarre parametri dalla query string
     function getQueryParams() {
       const params = {};
       window.location.search.substring(1).split("&").forEach(pair => {
@@ -55,17 +47,12 @@
       return params;
     }
 
-    // Leggiamo eventuali parametri ricevuti da Supabase
     const params = getQueryParams();
     const redirectUrl = "io.supabase.flutter://login-callback/?" + new URLSearchParams(params).toString();
 
-    // Imposta link manuale
     document.getElementById("manual-link").setAttribute("href", redirectUrl);
-
-    // Effettua redirect automatico dopo breve delay
-    setTimeout(() => {
-      window.location.href = redirectUrl;
-    }, 1200);
+    setTimeout(() => { window.location.href = redirectUrl; }, 1200);
   </script>
 </body>
 </html>
+
