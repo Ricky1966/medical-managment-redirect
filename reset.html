@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reindirizzamento a HealthCare</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #3f87a6, #ebf8e1);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      font-size: 1.2rem;
+    }
+    .loader {
+      margin-top: 20px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3f87a6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    a {
+      color: #3f87a6;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Ti stiamo reindirizzando...</h1>
+  <p id="subtitle">Attendere qualche istante</p>
+  <p>Se non succede, <a id="manual-link" href="#">tocca qui</a>.</p>
+  <div class="loader"></div>
+
+  <script>
+    function getQueryParams() {
+      const params = {};
+      window.location.search.substring(1).split("&").forEach(pair => {
+        const [key, value] = pair.split("=");
+        if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+      });
+      return params;
+    }
+
+    const currentPath = window.location.pathname;
+    const params = getQueryParams();
+
+    let redirectUrl = "";
+    if (currentPath.includes("reset")) {
+      document.getElementById("title").textContent = "Reimpostazione password in corso...";
+      document.getElementById("subtitle").textContent = "Verrai reindirizzato all’app per completare il reset";
+      redirectUrl = "io.supabase.flutter://reset-callback/?" + new URLSearchParams(params).toString();
+    } else {
+      document.getElementById("title").textContent = "Accesso in corso...";
+      document.getElementById("subtitle").textContent = "Verrai reindirizzato all’app per completare il login";
+      redirectUrl = "io.supabase.flutter://login-callback/?" + new URLSearchParams(params).toString();
+    }
+
+    document.getElementById("manual-link").setAttribute("href", redirectUrl);
+
+    setTimeout(() => {
+      window.location.href = redirectUrl;
+    }, 1200);
+  </script>
+</body>
+</html>
