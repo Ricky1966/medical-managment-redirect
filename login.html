@@ -2,8 +2,9 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reindirizzamento a HealthCare</title>
+  <meta name="theme-color" content="#3f87a6" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,56 +17,42 @@
       height: 100vh;
       text-align: center;
       padding: 20px;
+      margin: 0;
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-    p {
-      font-size: 1.2rem;
-    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    p { font-size: 1.1rem; margin: 0.25rem 0; }
     .loader {
       margin-top: 20px;
       border: 6px solid #f3f3f3;
       border-top: 6px solid #3f87a6;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+    a { color: #0d5c73; font-weight: bold; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Ti stiamo reindirizzando all’app...</h1>
-  <p>Se non succede automaticamente, <a id="manual-link" href="#">tocca qui</a>.</p>
-  <div class="loader"></div>
+  <h1>Ti stiamo reindirizzando all’app…</h1>
+  <p>Se non succede automaticamente, <a id="manual-link" href="#" rel="noopener noreferrer">tocca qui</a>.</p>
+  <div class="loader" aria-hidden="true"></div>
 
   <script>
-    // Funzione per estrarre parametri dalla query string
-    function getQueryParams() {
-      const params = {};
-      window.location.search.substring(1).split("&").forEach(pair => {
-        const [key, value] = pair.split("=");
-        if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || "");
-      });
-      return params;
-    }
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const deepLink = 'io.supabase.flutter://login-callback?' + params.toString();
 
-    // Leggiamo eventuali parametri ricevuti da Supabase
-    const params = getQueryParams();
-    const redirectUrl = "io.supabase.flutter://login-callback/?" + new URLSearchParams(params).toString();
+      const a = document.getElementById('manual-link');
+      a.setAttribute('href', deepLink);
+      a.setAttribute('rel', 'noopener noreferrer');
 
-    // Imposta link manuale
-    document.getElementById("manual-link").setAttribute("href", redirectUrl);
-
-    // Effettua redirect automatico dopo breve delay
-    setTimeout(() => {
-      window.location.href = redirectUrl;
-    }, 1200);
+      setTimeout(() => { window.location.href = deepLink; }, 1000);
+    })();
   </script>
+  <noscript>
+    <p>JavaScript è necessario per il reindirizzamento automatico. Usa il link sopra per continuare.</p>
+  </noscript>
 </body>
 </html>
+
