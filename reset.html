@@ -2,23 +2,20 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reset password HealthCare</title>
+  <meta name="theme-color" content="#ff9966" />
   <style>
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff9966, #ffecd2);
       color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-      padding: 20px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100vh; text-align: center; padding: 20px; margin: 0;
     }
     h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { font-size: 1.2rem; }
+    p { font-size: 1.1rem; margin: 0.25rem 0; }
     .loader {
       margin-top: 20px;
       border: 6px solid #f3f3f3;
@@ -28,30 +25,29 @@
       animation: spin 1s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
-    a { color: #ff6600; font-weight: bold; }
+    a { color: #ff6600; font-weight: bold; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Reimpostazione password...</h1>
-  <p>Verrai reindirizzato all’app per completare il reset</p>
-  <p>Se non succede, <a id="manual-link" href="#">tocca qui</a>.</p>
-  <div class="loader"></div>
+  <h1>Reimpostazione password…</h1>
+  <p>Verrai reindirizzato all’app per completare il reset.</p>
+  <p>Se non succede, <a id="manual-link" href="#" rel="noopener noreferrer">tocca qui</a>.</p>
+  <div class="loader" aria-hidden="true"></div>
 
   <script>
-    function getQueryParams() {
-      const params = {};
-      window.location.search.substring(1).split("&").forEach(pair => {
-        const [key, value] = pair.split("=");
-        if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || "");
-      });
-      return params;
-    }
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const deepLink = 'io.supabase.flutter://reset-callback?' + params.toString();
 
-    const params = getQueryParams();
-    const redirectUrl = "io.supabase.flutter://reset-callback/?" + new URLSearchParams(params).toString();
+      const a = document.getElementById('manual-link');
+      a.setAttribute('href', deepLink);
+      a.setAttribute('rel', 'noopener noreferrer');
 
-    document.getElementById("manual-link").setAttribute("href", redirectUrl);
-    setTimeout(() => { window.location.href = redirectUrl; }, 1200);
+      setTimeout(() => { window.location.href = deepLink; }, 1000);
+    })();
   </script>
+  <noscript>
+    <p>JavaScript è necessario per il reindirizzamento automatico. Usa il link sopra per continuare.</p>
+  </noscript>
 </body>
 </html>
