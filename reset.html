@@ -43,7 +43,7 @@
       a.setAttribute('href', deepLink);
       a.setAttribute('rel', 'noopener noreferrer');
 
-      setTimeout(() => { window.location.href = deepLink; }, 1000);
+      setTimeout(() => { window.location.replace(deepLink); }, 1500);
     })();
   </script>
   <noscript>
