@@ -1,1 +1,23 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>hCaptcha</title>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+  </style>
+</head>
+<body>
+  <div class="h-captcha" data-sitekey="HCAPTCHA_SITE_KEY" data-callback="onSolved"></div>
+  <script>
+    function onSolved(token) {
+      // ritorno all'app con schema custom
+      const url = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
 
