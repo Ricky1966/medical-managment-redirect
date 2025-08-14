@@ -3,56 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reindirizzamento a HealthCare</title>
+  <title>Login – HealthCare</title>
   <meta name="theme-color" content="#3f87a6" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #3f87a6, #ebf8e1);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-      padding: 20px;
-      margin: 0;
-    }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { font-size: 1.1rem; margin: 0.25rem 0; }
-    .loader {
-      margin-top: 20px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #3f87a6;
-      border-radius: 50%;
-      width: 40px; height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
-    a { color: #0d5c73; font-weight: bold; text-decoration: none; }
+    :root { --bg1:#f5f9ff; --accent:#3f87a6; --card:#fff; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg1); color:#222;
+           display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; padding:16px; }
+    .card { background:var(--card); max-width:560px; width:100%; border-radius:16px; padding:24px;
+            box-shadow:0 10px 30px rgba(0,0,0,.12); text-align:center; }
+    h1 { margin:0 0 .5rem; font-size:1.6rem; }
+    p { margin:.25rem 0; }
+    .loader { margin:18px auto 0; border:5px solid #e5eaf0; border-top:5px solid var(--accent);
+              width:36px; height:36px; border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg);} }
+    a { color:var(--accent); text-decoration:none; font-weight:600; }
+    .hidden { display:none; }
+    .space { height:12px; }
   </style>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
-  <h1>Ti stiamo reindirizzando all’app…</h1>
-  <p>Se non succede automaticamente, <a id="manual-link" href="#" rel="noopener noreferrer">tocca qui</a>.</p>
-  <div class="loader" aria-hidden="true"></div>
+  <div class="card">
+    <h1 id="title">Apertura login…</h1>
+    <p id="subtitle">Verrai portato automaticamente nell’app HealthCare.</p>
+    <div id="manual" class="space"></div>
+    <div id="loader" class="loader" aria-hidden="true"></div>
+
+    <!-- mode=captcha -> mostra hCaptcha -->
+    <div id="captchaBox" class="hidden">
+      <p>Verifica di sicurezza</p>
+      <div class="h-captcha" data-sitekey="HCAPTCHA_SITE_KEY" data-callback="onSolved"></div>
+      <p style="font-size:.9rem;opacity:.8">Se non vedi il widget, controlla Site key e dominio.</p>
+    </div>
+  </div>
 
   <script>
     (function () {
       const params = new URLSearchParams(window.location.search);
-      const deepLink = 'io.supabase.flutter://login-callback?' + params.toString();
+      if (window.location.hash) {
+        const hash = new URLSearchParams(window.location.hash.substring(1));
+        hash.forEach((v, k) => params.set(k, v));
+      }
+      const mode = (params.get('mode') || '').toLowerCase();
 
-      const a = document.getElementById('manual-link');
-      a.setAttribute('href', deepLink);
-      a.setAttribute('rel', 'noopener noreferrer');
+      // deep link di default per magic link/login callback
+      const deeplink = 'io.supabase.flutter://login-callback?' + params.toString();
 
-      setTimeout(() => { window.location.href = deepLink; }, 1000);
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+      const loader = document.getElementById('loader');
+      const manual = document.getElementById('manual');
+      const captchaBox = document.getElementById('captchaBox');
+
+      if (mode === 'captcha') {
+        title.textContent = 'Verifica di sicurezza';
+        subtitle.textContent = 'Completa il captcha per continuare in app.';
+        loader.classList.add('hidden');
+        manual.innerHTML = '';
+        captchaBox.classList.remove('hidden');
+
+        window.onSolved = function (token) {
+          const url = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
+          window.location.href = url;
+        };
+      } else {
+        const a = document.createElement('a');
+        a.href = deeplink;
+        a.rel = 'noopener noreferrer';
+        a.textContent = 'tocca qui se non succede nulla';
+        manual.appendChild(a);
+        setTimeout(() => { window.location.replace(deeplink); }, 700);
+      }
     })();
   </script>
   <noscript>
-    <p>JavaScript è necessario per il reindirizzamento automatico. Usa il link sopra per continuare.</p>
+    <p>JavaScript è necessario per questa pagina.</p>
   </noscript>
 </body>
 </html>
-
