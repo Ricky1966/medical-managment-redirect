@@ -34,18 +34,19 @@
   <p>Se non succede, <a id="manual-link" href="#" rel="noopener noreferrer">tocca qui</a>.</p>
   <div class="loader" aria-hidden="true"></div>
 
-  <script>
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-      const deepLink = 'io.supabase.flutter://reset-callback?' + params.toString();
-
-      const a = document.getElementById('manual-link');
-      a.setAttribute('href', deepLink);
-      a.setAttribute('rel', 'noopener noreferrer');
-
-      setTimeout(() => { window.location.replace(deepLink); }, 1500);
-    })();
-  </script>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (window.location.hash) {
+    const hash = new URLSearchParams(window.location.hash.substring(1));
+    hash.forEach((v, k) => params.set(k, v));
+  }
+  const deepLink = 'io.supabase.flutter://reset-callback?' + params.toString();
+  const a = document.getElementById('manual-link');
+  a.href = deepLink; a.rel = 'noopener noreferrer';
+  setTimeout(() => { window.location.replace(deepLink); }, 800);
+})();
+</script>
   <noscript>
     <p>JavaScript è necessario per il reindirizzamento automatico. Usa il link sopra per continuare.</p>
   </noscript>
