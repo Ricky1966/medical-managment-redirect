@@ -6,34 +6,47 @@
   <title>Login – HealthCare</title>
   <meta name="theme-color" content="#3f87a6" />
   <style>
-    :root { --bg1:#f5f9ff; --accent:#3f87a6; --card:#fff; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg1); color:#222;
-           display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; padding:16px; }
-    .card { background:var(--card); max-width:560px; width:100%; border-radius:16px; padding:24px;
-            box-shadow:0 10px 30px rgba(0,0,0,.12); text-align:center; }
-    h1 { margin:0 0 .5rem; font-size:1.6rem; }
-    p { margin:.25rem 0; }
-    .loader { margin:18px auto 0; border:5px solid #e5eaf0; border-top:5px solid var(--accent);
-              width:36px; height:36px; border-radius:50%; animation:spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg);} }
-    a { color:var(--accent); text-decoration:none; font-weight:600; }
-    .hidden { display:none; }
-    .space { height:12px; }
+    :root { --bg:#f5f9ff; --card:#fff; --accent:#3f87a6; --muted:#5f6b7a; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 16px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg); color:#222;
+      min-height: 100vh; display:flex; align-items:center; justify-content:center;
+    }
+    .card {
+      width: 100%; max-width: 560px; background: var(--card); border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 22px; text-align: center;
+    }
+    h1 { margin: 0 0 .5rem; font-size: 1.6rem; }
+    p { margin: .25rem 0; color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .loader {
+      margin: 18px auto 0; border: 5px solid #e5eaf0; border-top:5px solid var(--accent);
+      width: 36px; height: 36px; border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none; }
+    .space { height: 12px; }
+    .note { font-size: .9rem; opacity: .85; }
   </style>
+
+  <!-- hCaptcha -->
   <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
   <div class="card">
     <h1 id="title">Apertura login…</h1>
     <p id="subtitle">Verrai portato automaticamente nell’app HealthCare.</p>
+
     <div id="manual" class="space"></div>
     <div id="loader" class="loader" aria-hidden="true"></div>
 
-    <!-- mode=captcha -> mostra hCaptcha -->
+    <!-- Se mode=captcha, compare questo box -->
     <div id="captchaBox" class="hidden">
-      <p>Verifica di sicurezza</p>
-      <div class="h-captcha" data-sitekey="ca76bf10-39b6-4040-bdb0-0e500eae8ce2" data-callback="onSolved"></div>
-      <p style="font-size:.9rem;opacity:.8">Se non vedi il widget, controlla Site key e dominio.</p>
+      <p class="note">Verifica di sicurezza</p>
+      <div class="h-captcha" data-sitekey="HCAPTCHA_SITE_KEY" data-callback="onSolved"></div>
+      <p class="note">Se il widget non appare, controlla Site key e domini consentiti su hCaptcha.</p>
     </div>
   </div>
 
@@ -41,12 +54,12 @@
     (function () {
       const params = new URLSearchParams(window.location.search);
       if (window.location.hash) {
-        const hash = new URLSearchParams(window.location.hash.substring(1));
+        const hash = new URLSearchParams(window.location.hash.slice(1));
         hash.forEach((v, k) => params.set(k, v));
       }
       const mode = (params.get('mode') || '').toLowerCase();
 
-      // deep link di default per magic link/login callback
+      // Deep link di default per magic link/login callback
       const deeplink = 'io.supabase.flutter://login-callback?' + params.toString();
 
       const title = document.getElementById('title');
@@ -55,17 +68,18 @@
       const manual = document.getElementById('manual');
       const captchaBox = document.getElementById('captchaBox');
 
+      // Callback hCaptcha
+      window.onSolved = function (token) {
+        const url = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
+        window.location.href = url;
+      };
+
       if (mode === 'captcha') {
         title.textContent = 'Verifica di sicurezza';
         subtitle.textContent = 'Completa il captcha per continuare in app.';
         loader.classList.add('hidden');
         manual.innerHTML = '';
         captchaBox.classList.remove('hidden');
-
-        window.onSolved = function (token) {
-          const url = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
-          window.location.href = url;
-        };
       } else {
         const a = document.createElement('a');
         a.href = deeplink;
@@ -76,6 +90,7 @@
       }
     })();
   </script>
+
   <noscript>
     <p>JavaScript è necessario per questa pagina.</p>
   </noscript>
