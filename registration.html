@@ -37,48 +37,17 @@
     </div>
   </div>
 
-  <script>
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-      if (window.location.hash) {
-        const hash = new URLSearchParams(window.location.hash.substring(1));
-        hash.forEach((v, k) => params.set(k, v));
-      }
-      const mode = (params.get('mode') || '').toLowerCase();
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 
-      // deep link di default per conferma registrazione
-      const deeplink = 'io.supabase.flutter://login-callback?' + params.toString();
+<div class="h-captcha" data-sitekey="LA_TUA_SITE_KEY" data-callback="onCaptchaSolved"></div>
 
-      const title = document.getElementById('title');
-      const subtitle = document.getElementById('subtitle');
-      const loader = document.getElementById('loader');
-      const manual = document.getElementById('manual');
-      const captchaBox = document.getElementById('captchaBox');
+<script>
+  function onCaptchaSolved(token) {
+    // reindirizza all'app con il token
+    window.location.href = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
+  }
+</script>
 
-      if (mode === 'captcha') {
-        // Modalità hCaptcha → nessun redirect automatico
-        title.textContent = 'Verifica di sicurezza';
-        subtitle.textContent = 'Completa il captcha per continuare in app.';
-        loader.classList.add('hidden');
-        manual.innerHTML = '';
-        captchaBox.classList.remove('hidden');
-
-        window.onSolved = function (token) {
-          // restituisco il token all’app
-          const url = 'healthcare-captcha://solved?token=' + encodeURIComponent(token);
-          window.location.href = url;
-        };
-      } else {
-        // Modalità redirect standard (conferma sign-up)
-        const a = document.createElement('a');
-        a.href = deeplink;
-        a.rel = 'noopener noreferrer';
-        a.textContent = 'tocca qui se non succede nulla';
-        manual.appendChild(a);
-        setTimeout(() => { window.location.replace(deeplink); }, 700);
-      }
-    })();
-  </script>
   <noscript>
     <p>JavaScript è necessario per questa pagina.</p>
   </noscript>
